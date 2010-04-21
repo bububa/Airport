@@ -1,0 +1,39 @@
+target = 'eva'
+libs = Split("""curl 
+                curlpp 
+                boost_regex 
+                boost_filesystem 
+                boost_system 
+                boost_program_options 
+                boost_date_time
+                chardet 
+                iconv 
+                boost_thread 
+                json_linux-gcc-4.2.1_libmt 
+                botan 
+                mongoclient 
+                mysqlpp 
+                mysqlclient 
+                tidy 
+                airport""")
+env = Environment(CC = ['g++', 'gcc'], CFLAGS = ['-g', '-Wall', '-pthread' '-D_REENTRANT'], CPPPATH=['#include', '#build', '/usr/local/mysql-5.1.38-osx10.5-x86_64/include/'], LIBS=libs, LIBPATH=["#build/libairport", "/usr/local/mysql-5.1.38-osx10.5-x86_64/lib/"])
+eva = env.Program(target, "eva.cpp")
+Import ('libairport')
+Requires(eva, libairport)
+
+target_airport = 'airport'
+airport = env.Program(target_airport, "airport.cpp")
+
+target_inserter = 'inserter'
+inserter = env.Program(target_inserter, "inserter.cpp")
+
+target_configure = 'configure'
+configure = env.Program(target_configure, "configure.cpp")
+
+target_keygen = 'keygen'
+keygen = env.Program(target_keygen, "keygen.cpp")
+
+target_test = 'test'
+test = env.Program(target_test, "test.cpp")
+
+Export("airport eva inserter")

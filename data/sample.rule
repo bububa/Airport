@@ -1,0 +1,125 @@
+modules
+{
+    _list List
+    {
+        item http://bj.jipingmi.com/租房/北京/2800-406/1.htm
+        item http://bj.jipingmi.com/租房/北京/2800-406/2.htm
+        item http://bj.jipingmi.com/租房/北京/2800-406/3.htm
+        item http://bj.jipingmi.com/租房/北京/2800-406/4.htm
+        item http://bj.jipingmi.com/租房/北京/2800-406/5.htm
+        item http://bj.jipingmi.com/租房/北京/2800-406/6.htm
+        item http://bj.jipingmi.com/租房/北京/2800-406/7.htm
+        item http://bj.jipingmi.com/租房/北京/2800-406/8.htm
+        item http://bj.jipingmi.com/租房/北京/2800-406/9.htm
+        item http://bj.jipingmi.com/租房/北京/2800-406/10.htm
+        item http://bj.jipingmi.com/租房/北京/2800-406/11.htm
+        item http://bj.jipingmi.com/租房/北京/2800-406/12.htm
+        item http://bj.jipingmi.com/租房/北京/2800-406/13.htm
+        item http://bj.jipingmi.com/租房/北京/2800-406/14.htm
+        item http://bj.jipingmi.com/租房/北京/2800-406/15.htm
+        item http://bj.jipingmi.com/租房/北京/2800-406/16.htm
+        item http://bj.jipingmi.com/租房/北京/2800-406/17.htm
+        item http://bj.jipingmi.com/租房/北京/2800-406/18.htm
+        item http://bj.jipingmi.com/租房/北京/2800-406/19.htm
+        item http://bj.jipingmi.com/租房/北京/2800-406/20.htm
+    }
+    codeLink StringJoin
+    {
+        strings
+        {
+            item http://snipplr.com/view.php?codeview&id=
+            _item ""
+        }
+    }
+    codeCrawler BasicCrawler
+    {
+        url codeLink
+    }
+    codeCrawlRES ListMember
+    {
+        list codeCrawler
+        member_type basiccrawler
+        member 1
+    }
+    codePage ListMember
+    {
+        list codeCrawlRES
+        member_type httpresponse
+        member 0
+    }
+    codeResponse HttpResponse
+    {
+        httpresponse codePage
+        member parsed_data
+    }
+    codeData Regex
+    {
+        regex "<textarea[^^]*?class=\"copysource\">([^^]*?)</textarea>"
+        SUBMOD codeResponse
+    }
+    tagRegex Regex
+    {
+        regex <a[^^]*?>([^^]*?)</a>
+        matchall true
+    }
+    tagData StringJoin
+    {
+        strings tagRegex
+        spliter ,
+    }
+    tidyComment Tidy
+    hc HttpClient
+    {
+        no_cookie false
+    }
+    bc BasicCrawler
+    {
+        urls _list
+        parsers
+        {
+            title <title>([^^]*?)</title>
+        }
+        observers
+        {
+            title hc
+        }
+        httpclient hc
+    }
+    pc PaginateCrawler
+    {
+        starturl "http://bj.jipingmi.com/租房/北京/2800-406/{NUMBER}.htm"
+        start_number 1
+        end_number 5
+    }
+    lc ListCrawler
+    {
+        starturl "http://snipplr.com/all/page/{NUMBER}"
+        start_number 1
+        end_number 5
+        page_step 1
+        url_pattern http://snipplr\\.com/view/\\d+/[^^]*?/
+        save_in_mongo true
+        parsers
+        {
+            title <h1>([^^]*?)</h1>
+            language "<p class=\"nomarg\"><span class=\"rgt\">Published in: ([^^]*?)</span>"
+            author "<h2>Posted By</h2>\\s+<p><a[^^]*?>([^^]*?)</a>"
+            code "<a rel=\"nofollow\" href=\"/view\\.php\\?codeview&amp;id=(\\d+)\">"
+            comment "<div class=\"description\">([^^]*?)</div>"
+            tag <h2>Tagged</h2>\\s+<p>([^^]*?)</p>
+        }
+        observers
+        {
+            code codeData
+            tag tagData
+            comment tidyComment
+        }
+        essential_fields
+        {
+            item comment
+        }
+    }
+}
+starter lc
+update_time 1271517492
+duration 600

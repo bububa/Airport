@@ -1,0 +1,34 @@
+;Scrape ASP.NET WEBSITE EXAMPLE
+modules
+{
+    lc ListCrawler
+    {
+        starturl "http://zjykrc.com/common/Resume_List.aspx"
+        start_number 1
+        end_number 3
+        page_step 1
+        url_pattern http://zjykrc\\.com/Personal/Per_Detail\\.aspx\\?per_account=[^^]*?
+        save_in_mongo false
+        parsers
+        {
+            title <title>([^^]*?)</title>
+        }
+        static_form
+        {
+            "ScriptManager1" "UpdatePanel1|pager"
+            "__EVENTTARGET" "pager"
+        }
+        auto_form
+        {
+            "__EVENTARGUMENT" 1
+            "pager_input" 0
+        }
+        inpage_form
+        {
+            "__VIEWSTATE" "id=\"__VIEWSTATE\" value=\"([^^]*?)\""
+        }
+    }
+}
+starter lc
+update_time 1271095508
+duration 0

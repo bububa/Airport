@@ -1,0 +1,12 @@
+fieldMap
+{
+    _id _id
+    effective_url url
+    parsed_data.title title
+    updated_time crawled_datetime
+}
+
+defaultValues
+{
+    inserted_datetime now()
+}

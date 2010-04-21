@@ -1,0 +1,4 @@
+SConscript([
+        'libairport/SConscript',
+        'app/SConscript',
+])

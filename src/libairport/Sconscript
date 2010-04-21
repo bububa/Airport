@@ -1,0 +1,38 @@
+import os
+import shutil
+
+target = 'libairport'
+src_files = Split("""Uriparser.cpp 
+                    Url.cpp 
+                    Utils.cpp 
+                    Mongo.cpp
+                    HttpClient.cpp 
+                    HttpResponse.cpp 
+                    BasicCrawler.cpp 
+                    PaginateCrawler.cpp 
+                    ListCrawler.cpp 
+                    DepthCrawler.cpp 
+                    Rule.cpp 
+                    Inserter.cpp
+                    License.cpp""")
+
+inc_files = Split("""Config.h 
+                    Uriparser.h 
+                    Url.h 
+                    Utils.h 
+                    Mongo.h
+                    HttpClient.h 
+                    HttpResponse.h 
+                    BasicCrawler.h 
+                    PaginateCrawler.h 
+                    ListCrawler.h 
+                    DepthCrawler.h 
+                    Rule.h 
+                    Inserter.h
+                    License.h""")
+
+env = Environment(CC = ['g++', 'gcc'], CFLAGS = ['-g', '-Wall', '-pthread' '-D_REENTRANT'], CPPPATH=['#include', '/usr/local/mysql-5.1.38-osx10.5-x86_64/include/'])
+
+libairport = env.StaticLibrary(target, src_files)
+
+Export ("libairport")
