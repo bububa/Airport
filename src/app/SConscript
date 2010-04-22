@@ -15,8 +15,9 @@ libs = Split("""curl
                 mysqlpp 
                 mysqlclient 
                 tidy 
+                ticppd 
                 airport""")
-env = Environment(CC = ['g++', 'gcc'], CFLAGS = ['-g', '-Wall', '-pthread' '-D_REENTRANT'], CPPPATH=['#include', '#build', '/usr/local/mysql-5.1.38-osx10.5-x86_64/include/'], LIBS=libs, LIBPATH=["#build/libairport", "/usr/local/mysql-5.1.38-osx10.5-x86_64/lib/"])
+env = Environment(CC = ['g++', 'gcc'], CFLAGS = ['-g', '-Wall', '-pthread' '-D_REENTRANT'], CPPPATH=['#include', '#build', '/usr/local/mysql-5.1.38-osx10.5-x86_64/include/'], LIBS=libs, LIBPATH=["#build/libairport", "#build/libticppd", "/usr/local/mysql-5.1.38-osx10.5-x86_64/lib/"])
 eva = env.Program(target, "eva.cpp")
 Import ('libairport')
 Requires(eva, libairport)
