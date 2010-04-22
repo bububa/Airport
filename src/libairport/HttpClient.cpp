@@ -6,7 +6,7 @@
 #include "Utils.h"
 #include <stdio.h>
 #include <sstream>
-#include <iostream>
+#include <istream>
 #include <fstream>
 
 #include <time.h>
@@ -572,4 +572,24 @@ airport::HttpClient::set_state (HttpClientState state)
     this->state = state;
  
     //state_changed (this, state);
+}
+
+std::map<std::string, std::string>
+airport::HttpClient::parse_headers(std::string &header)
+{
+    std::map<std::string, std::string> headers;
+    std::string line;
+    std::istringstream in(header);
+    while(std::getline(in, line))
+    {
+        std::vector<std::string> strs;
+        boost::split(strs, line, boost::is_any_of(":"));
+        if (strs.size()>1)
+        {
+            boost::trim(strs[1]);
+            headers.insert(std::map<std::string, std::string>::value_type(strs[0], strs[1]));
+        }
+    }
+    //boost::split(lines, header, boost::is_any_of("="));
+    return headers;
 }
