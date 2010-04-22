@@ -21,13 +21,17 @@
  
 #ifndef __UTILS_H__
 #define __UTILS_H__
- 
+
 #include <string>
 #include <vector>
 #include <map>
+#include <time.h>
 #include <tidy/tidy.h>
 #include <tidy/buffio.h>
 #include <boost/tuple/tuple.hpp>
+
+#define ISSPACE(c) ( 0x0020 == (c) )
+#define ISDIGIT(c) ((0x30 <= (c)) && ((c) <= 0x39))
 
 /**
  * Various utilities that do not fit anywhere else.
@@ -35,10 +39,8 @@
 namespace airport {
     
     class Utils {
-        static std::string htmlNodeText( TidyDoc tdoc, TidyNode tnod );
-        static std::string htmlSafeNode( TidyDoc tdoc, TidyNode tnod );
-        static bool isSafeNode( TidyNode tnod );
-        static ctmbstr nodeName(TidyNode tnod);
+        static int check_end (const char *p);
+        static time_t mktime_from_utc (struct tm *t);
         public:
             /**
              * Convert a byte size to a human readable string.
@@ -151,7 +153,12 @@ namespace airport {
             
             static bool endsWith (std::string const &fullString, std::string const &ending);
             
-            static std::string tidy(std::string &request);
+            static std::string htmlNodeText( TidyDoc tdoc, TidyNode tnod );
+            static std::string htmlSafeNode( TidyDoc tdoc, TidyNode tnod );
+            static bool isSafeNode( TidyNode tnod );
+            static ctmbstr nodeName(TidyNode tnod);
+            
+            static std::string tidy(std::string &request, const TidyOptionId outOptId = TidyXhtmlOut);
             
             static std::vector<std::string> fileToList(std::string &filename);
             
@@ -163,7 +170,9 @@ namespace airport {
             
             static std::string stripTags(std::string &req);
             
-            std::vector< boost::tuple<std::string, std::string, double> > bestMatchKeywords(std::vector< boost::tuple<std::string, std::string, double> > &keywords, std::string &str);
+            static std::vector< boost::tuple<std::string, std::string, double> > bestMatchKeywords(std::vector< boost::tuple<std::string, std::string, double> > &keywords, std::string &str);
+            
+            static time_t dateParser(std::string &datetime);
     };
 
 }
