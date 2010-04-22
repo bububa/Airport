@@ -6,10 +6,14 @@
 #include <map>
 #include <boost/tuple/tuple.hpp>
 #include "HttpResponse.h"
+#include "Feed.h"
+#include "FeedEntry.h"
 
 #define MONGO_DB_NAME "airport"
 #define MONGO_HTTPRESPONSE_COLLECTION "airport.httpresponse"
 #define MONGO_DEPTHRESPONSE_COLLECTION "airport.depthresponse"
+#define MONGO_FEED_COLLECTION "airport.feed"
+#define MONGO_FEEDENTRY_COLLECTION "airport.feedentry"
 #define MONGO_DISPATCHER_COLLECTION "airport.dispatcher"
 #define MONGO_SERVER_COLLECTION "airport.server"
 
@@ -46,6 +50,11 @@ namespace airport
         void pingServer(mongo::DBClientConnection &c, std::string &servername);
         std::map<std::string, std::pair<int, int> > serversStatus(mongo::DBClientConnection &c);
         std::vector< boost::tuple<std::string, std::string, double> > getKeywords(mongo::DBClientConnection &c, std::string &collection, std::string &json);
+        
+        mongo::BSONObj getFeedById(mongo::DBClientConnection &c, std::string &id);
+        void updateFeed(mongo::DBClientConnection &c, airport::Feed &feed);
+        mongo::BSONObj getFeedEntryById(mongo::DBClientConnection &c, std::string &id);
+        bool updateFeedEntry(mongo::DBClientConnection &c, airport::FeedEntry &entry);
     };
 }
 
