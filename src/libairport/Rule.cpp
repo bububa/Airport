@@ -172,6 +172,8 @@ airport::Rule::runable(std::string &module, time_t duration, time_t updated_time
     if (module == "ListCrawler" && (updated_time + duration) > time(NULL))
     {
         return false;
+    }else if (module == "FeedCrawler" && (updated_time + duration) > time(NULL)) {
+        return false;
     }
     return true;
 }
@@ -196,6 +198,20 @@ airport::Rule::update_rule(std::string &filename, std::string &module, boost::an
             duration += 600;
         }
         pt.put(path + ".end_number", endNumber);
+        pt.put("update_time", time(NULL));
+        pt.put("duration", duration);
+        boost::property_tree::write_info(filename, pt);
+    }else if (module == "FeedCrawler") {
+        bool saveInMongo = pt.get<bool>(path + ".save_in_mongo", true);
+        if (!saveInMongo) return;
+        std::pair< airport::FeedCrawler, std::pair<airport::Feed, std::vector<airport::FeedEntry> > > res = boost::any_cast< std::pair< airport::FeedCrawler, std::pair<airport::Feed, std::vector<airport::FeedEntry> > > >(response);
+        airport::FeedCrawler fc = res.first;std::cout << fc.get_new_results() << std::endl;
+        if (fc.get_new_results() > 0)
+        {
+            duration = (duration-600) > 600 ? (duration-600) : 600;
+        }else{
+            duration += 600;
+        }
         pt.put("update_time", time(NULL));
         pt.put("duration", duration);
         boost::property_tree::write_info(filename, pt);
@@ -237,6 +253,8 @@ airport::Rule::element(std::string &module, std::string &path, std::string &name
         response = paginateCrawler(path);
     }else if (module == "ListCrawler") {
         response = listCrawler(path);
+    }else if (module == "FeedCrawler") {
+        response = feedCrawler(path);
     }else if (module == "List") {
         response = List(path, boost::any_cast<std::string>(request));
     }else if (module == "Dict") {
@@ -958,6 +976,41 @@ airport::Rule::basicCrawler(std::string &path, const std::string &start_url)
     
     std::vector<airport::HttpResponse> hr = bc.start();
     std::pair< airport::BasicCrawler, std::vector<airport::HttpResponse> > rs(bc, hr);
+    return rs;
+}
+
+std::pair< airport::FeedCrawler, std::pair<airport::Feed, std::vector<airport::FeedEntry> > >
+airport::Rule::feedCrawler(std::string &path)
+{
+    airport::FeedCrawler fc;
+    std::pair<airport::Feed, std::vector<airport::FeedEntry> > result;
+    /* SET HTTPCLIENT */
+    std::string httpClientModule = pt.get<std::string>(path + ".httpclient", "");
+    if (!httpClientModule.empty())
+    {
+        std::string p = "modules." + httpClientModule;
+        std::string modName = pt.get<std::string>(p);
+        airport::HttpClient httpClient = boost::any_cast< airport::HttpClient >( element(modName, p, httpClientModule) );
+        fc.set_http_client(httpClient);
+    }
+    try
+    {
+        bool saveInMongo = pt.get<bool>(path + ".save_in_mongo");
+        fc.set_save_in_mongo(saveInMongo);
+    }catch(boost::property_tree::ptree_bad_path){ }
+    
+    try{
+        std::string startUrl = pt.get<std::string>(path + ".starturl");
+        result = fc.get(startUrl);
+    }catch(boost::property_tree::ptree_bad_path){ 
+        if (airport::DEBUG_LEVEL > airport::DEBUG_OFF)
+        {
+            boost::mutex::scoped_lock lock(mr_io_monitor);
+            std::cout << "ERROR: need starturl" << std::endl;
+            //throw exception;
+        }
+    }
+    std::pair< airport::FeedCrawler, std::pair<airport::Feed, std::vector<airport::FeedEntry> > > rs(fc, result);
     return rs;
 }
 
