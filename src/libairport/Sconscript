@@ -14,7 +14,10 @@ src_files = Split("""Uriparser.cpp
                     DepthCrawler.cpp 
                     Rule.cpp 
                     Inserter.cpp
-                    License.cpp""")
+                    License.cpp
+                    FeedCrawler.cpp
+                    Feed.cpp
+                    FeedEntry.cpp""")
 
 inc_files = Split("""Config.h 
                     Uriparser.h 
@@ -29,7 +32,10 @@ inc_files = Split("""Config.h
                     DepthCrawler.h 
                     Rule.h 
                     Inserter.h
-                    License.h""")
+                    License.h
+                    FeedCrawler.h
+                    Feed.h
+                    FeedEntry.h""")
 
 env = Environment(CC = ['g++', 'gcc'], CFLAGS = ['-g', '-Wall', '-pthread' '-D_REENTRANT'], CPPPATH=['#include', '/usr/local/mysql-5.1.38-osx10.5-x86_64/include/'])
 

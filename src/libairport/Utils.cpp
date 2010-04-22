@@ -414,7 +414,7 @@ airport::Utils::endsWith (std::string const &fullString, std::string const &endi
 }
 
 std::string
-airport::Utils::tidy(std::string &request)
+airport::Utils::tidy(std::string &request, const TidyOptionId outOptId)
 {
     if (request.empty()) return request;
     TidyBuffer output = {0};
@@ -423,7 +423,9 @@ airport::Utils::tidy(std::string &request)
     Bool ok;
     
     TidyDoc tdoc = tidyCreate();                     // Initialize "document"
-    ok = tidyOptSetBool( tdoc, TidyXhtmlOut, yes );  // Convert to XHTML
+    ok = tidyOptSetBool( tdoc, outOptId, yes );  // Convert to XHTML
+    if (outOptId == TidyXmlOut)
+        ok = tidyOptSetBool( tdoc, TidyXmlTags, yes );
     if ( ok )
         rc = tidySetErrorBuffer( tdoc, &errbuf );      // Capture diagnostics
     if (rc >= 0)
@@ -584,7 +586,9 @@ airport::Utils::htmlSafeNode( TidyDoc tdoc, TidyNode tnod )
         {
             TidyNode cchild = tidyGetChild(child);
             ctmbstr cname = airport::Utils::nodeName(cchild);
-            if (name=="Text" || cname=="Text" || tidyNodeIsHR(child) || tidyNodeIsBR(child) || tidyNodeIsIMG(child))
+            std::string namet(reinterpret_cast<const char *>(name));
+            std::string cnamet(reinterpret_cast<const char *>(cname));
+            if (namet=="Text" || cnamet=="Text" || tidyNodeIsHR(child) || tidyNodeIsBR(child) || tidyNodeIsIMG(child))
             {
                 TidyBuffer buf = {0};
                 tidyNodeGetText (tdoc, child, &buf);
@@ -660,4 +664,71 @@ airport::Utils::bestMatchKeywords(std::vector< boost::tuple<std::string, std::st
         response.push_back(it->first);
     }
     return response;
+}
+
+int
+airport::Utils::check_end (const char *p)
+{
+    if (!p) return 0;
+    while (ISSPACE (*p)) ++p;
+    if (!*p 
+        || (p[0] == 'G' && p[1] == 'M' && p[2] == 'T')
+        || ((p[0] == '+' || p[1] == '-') && ISDIGIT (p[1])))
+        return 1;
+    else
+        return 0;
+}
+
+time_t
+airport::Utils::mktime_from_utc (struct tm *t)
+{
+    time_t tl, tb;
+    struct tm *tg;
+    tl = mktime (t);
+    if (tl == -1)
+    {
+        t->tm_hour--;
+        tl = mktime (t);
+        if (tl == -1)
+            return -1; /* can't deal with output from strptime */
+        tl += 3600;
+    }
+    tg = gmtime (&tl);
+    tg->tm_isdst = 0;
+    tb = mktime (tg);
+    if (tb == -1)
+    {
+        tg->tm_hour--;
+        tb = mktime (tg);
+        if (tb == -1)
+            return -1; /* can't deal with output from gmtime */
+        tb += 3600;
+    }
+    return (tl - (tb - tl));
+}
+
+time_t
+airport::Utils::dateParser(std::string &datetime)
+{
+    struct tm parsed;
+    parsed.tm_isdst = -1;
+    time_t mtime;
+    /* RFC 1123 */
+    if ( check_end(strptime(datetime.c_str(), "%a, %d %b %Y %H:%M:%S GMT", &parsed))
+    /* RFC 850 */
+    || check_end(strptime(datetime.c_str(), "%a, %d-%b-%y %H:%M:%S GMT", &parsed))
+    /* RFC 822 */
+    || check_end(strptime(datetime.c_str(), "%d %b %Y %T", &parsed))
+    || check_end(strptime(datetime.c_str(), "%a, %d %b %Y %H:%M:%S %z", &parsed))
+    /* REST */
+    || check_end(strptime(datetime.c_str(), "%m/%d/%Y", &parsed))
+    || check_end(strptime(datetime.c_str(), "%Y-%m-%d", &parsed))
+    || check_end(strptime(datetime.c_str(), "%Y-%m-%d %H:%M:%S", &parsed))
+    /* asctime */
+    || check_end(strptime(datetime.c_str(), "%a, %b %d %H:%M:%S %Y", &parsed)) ) 
+    {
+        mtime = mktime_from_utc(&parsed);
+        //mtime = timegm(&parsed);
+    }
+    return mtime;
 }
