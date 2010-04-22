@@ -11,6 +11,9 @@
 #include "ListCrawler.h"
 #include "BasicCrawler.h"
 #include "PaginateCrawler.h"
+#include "FeedCrawler.h"
+#include "Feed.h"
+#include "FeedEntry.h"
 
 namespace airport
 {
@@ -28,6 +31,7 @@ namespace airport
         std::pair< airport::BasicCrawler, std::vector<airport::HttpResponse> > basicCrawler(std::string &path, const std::string& start_url="");
         std::pair< airport::PaginateCrawler, std::vector<airport::HttpResponse> > paginateCrawler(std::string &path);
         std::pair< airport::ListCrawler, std::vector<airport::HttpResponse> > listCrawler(std::string &path);
+        std::pair< airport::FeedCrawler, std::pair<airport::Feed, std::vector<airport::FeedEntry> > > feedCrawler(std::string &path);
         boost::any List(std::string &path, const std::string &request="");
         boost::any Dict(std::string &path, const std::string &request="");
         boost::any ListMember(std::string &path, const std::string &request="");
