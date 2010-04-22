@@ -105,6 +105,8 @@ namespace airport {
         
         airport::Url get_url() const { return url; }
         HttpClientState get_state () const { return state; }
+        
+        static std::map<std::string, std::string> parse_headers(std::string &header);
     };
     
 }
