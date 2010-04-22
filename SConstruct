@@ -87,9 +87,9 @@ def copy_headers():
             sys.exit(0)
 
 # Check Headers
-env = Environment(LIBPATH=["#build/libairport", "/usr/local/mysql-5.1.38-osx10.5-x86_64/lib/"])
+env = Environment(LIBPATH=["#build/libairport", "#build/libticppd", "/usr/local/mysql-5.1.38-osx10.5-x86_64/lib/"])
 conf = Configure(env)
-libs = ('curl', 'curlpp', 'boost_regex', 'boost_filesystem', 'boost_system', 'boost_program_options', 'boost_date_time', 'chardet', 'iconv', 'boost_thread', 'json_linux-gcc-4.2.1_libmt', 'botan', 'mongoclient', 'mysqlpp', 'mysqlclient', 'tidy');
+libs = ('curl', 'curlpp', 'boost_regex', 'boost_filesystem', 'boost_system', 'boost_program_options', 'boost_date_time', 'chardet', 'iconv', 'boost_thread', 'json_linux-gcc-4.2.1_libmt', 'botan', 'mongoclient', 'mysqlpp', 'mysqlclient', 'tidy', 'ticppd');
 for lib in libs:
     if not conf.CheckLib(lib):
         print 'Did not find lib%s.a or %s.lib, exiting!'%(lib, lib)
