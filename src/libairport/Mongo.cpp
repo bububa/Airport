@@ -75,6 +75,7 @@ airport::Mongo::httpResponseBSONObj(airport::HttpResponse &httpResponse)
     
     airport::Url url = httpResponse.get_url();
     b.append("_id", airport::Utils::sha1(url.get_effective_url()));
+    b.append("domain", url.get_base_url());
     b.append("effective_url", url.get_effective_url());
     b.append("code", (int)httpResponse.get_response_code());
     b.append("total_time", httpResponse.get_total_time());
@@ -275,4 +276,76 @@ airport::Mongo::getKeywords(mongo::DBClientConnection &c, std::string &collectio
         response.push_back( boost::tuple<std::string, std::string, double>(name, cat, weight) );
     }
     return response;
+}
+
+mongo::BSONObj 
+airport::Mongo::getFeedById(mongo::DBClientConnection &c, std::string &id)
+{
+    mongo::BSONObj b = c.findOne(MONGO_FEED_COLLECTION, mongo::QUERY("_id" << id));
+    return b;
+}
+
+void 
+airport::Mongo::updateFeed(mongo::DBClientConnection &c, airport::Feed &feed)
+{
+    std::string hashUrl = airport::Utils::sha1(feed.get_url());
+    mongo::BSONObj item = getFeedById(c, hashUrl);
+    mongo::BSONObjBuilder b;
+    b.append("url", feed.get_url());
+    b.append("title", feed.get_title());
+    b.append("desc", feed.get_desc());
+    b.append("link", feed.get_link());
+    b.append("etag", feed.get_etag());
+    b.append("last_modified", feed.get_last_modified());
+    b.append("pubdate", (long long int)feed.get_pubdate());
+    b.append("updated_datetime", (long long int)time(NULL));
+    if (item.isEmpty())
+    {
+        b.append("_id", hashUrl);
+        b.append("inserted_datetime", (long long int)time(NULL));
+        mongo::BSONObj p = b.obj();
+        c.insert(MONGO_FEED_COLLECTION, p);
+    }else{
+        mongo::BSONObj p = b.obj();
+        c.update(MONGO_FEED_COLLECTION, BSON("_id"<<hashUrl), BSON("$set"<<p));
+    }
+}
+
+mongo::BSONObj 
+airport::Mongo::getFeedEntryById(mongo::DBClientConnection &c, std::string &id)
+{
+    mongo::BSONObj b = c.findOne(MONGO_FEEDENTRY_COLLECTION, mongo::QUERY("_id" << id));
+    return b;
+}
+
+bool 
+airport::Mongo::updateFeedEntry(mongo::DBClientConnection &c, airport::FeedEntry &entry)
+{
+    bool insert = false;
+    std::string hashUrl = airport::Utils::sha1(entry.get_link());
+    mongo::BSONObj item = getFeedEntryById(c, hashUrl);
+    mongo::BSONObjBuilder b;
+    b.append("title", entry.get_title());
+    b.append("desc", entry.get_desc());
+    b.append("link", entry.get_link());
+    b.append("pubdate", (long long int)entry.get_pubdate());
+    b.append("updated_datetime", (long long int)time(NULL));
+    b.append("feed_link", entry.get_feed_link());
+    b.append("web_link", entry.get_web_link());
+    b.append("author", entry.get_author());
+    b.append("category", entry.get_category());
+    b.append("comments", entry.get_comments());
+    b.append("guid", entry.get_guid());
+    if (item.isEmpty())
+    {
+        b.append("_id", hashUrl);
+        b.append("inserted_datetime", (long long int)time(NULL));
+        mongo::BSONObj p = b.obj();
+        c.insert(MONGO_FEEDENTRY_COLLECTION, p);
+        insert = true;
+    }else{
+        mongo::BSONObj p = b.obj();
+        c.update(MONGO_FEEDENTRY_COLLECTION, BSON("_id"<<hashUrl), BSON("$set"<<p));
+    }
+    return insert;
 }
