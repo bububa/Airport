@@ -842,6 +842,12 @@ airport::Rule::feedCrawler(std::string &path)
         fc.set_enable_update(enableUpdate);
     }catch(boost::property_tree::ptree_bad_path){ }
     
+    try
+    {
+        bool fullRss = pt.get<bool>(path + ".full");
+        fc.set_full_rss(fullRss);
+    }catch(boost::property_tree::ptree_bad_path){ }
+    
     try{
         std::string startUrl = pt.get<std::string>(path + ".starturl");
         result = fc.get(startUrl);
