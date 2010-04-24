@@ -1,12 +1,23 @@
 #include "FeedCrawler.h"
 #include "BasicCrawler.h"
 #include "Utils.h"
+//#include "distance.h"
 #include "Mongo.h"
 #include <time.h>
 #include <algorithm>
 #include <cctype>
 
-airport::FeedCrawler::FeedCrawler():saveInMongo(true), results(0)
+template<class T>
+struct less_second
+: std::binary_function<T,T,bool>
+{
+   inline bool operator()(const T& lhs, const T& rhs)
+   {
+      return lhs.second < rhs.second;
+   }
+};
+
+airport::FeedCrawler::FeedCrawler():saveInMongo(true), fullRss(false), enableUpdate(true), results(0)
 {
     
 }
@@ -20,6 +31,18 @@ void
 airport::FeedCrawler::set_save_in_mongo(bool save)
 {
     saveInMongo = save;
+}
+
+void 
+airport::FeedCrawler::set_full_rss(bool full)
+{
+    fullRss = full;
+}
+
+void
+airport::FeedCrawler::set_enable_update(bool update)
+{
+    enableUpdate = update;
 }
 
 std::pair<airport::Feed, std::vector<airport::FeedEntry> >
@@ -93,6 +116,55 @@ airport::FeedCrawler::parse(airport::HttpResponse &httpResponse)
     airport::FeedType ft = detectType(tdoc);
     if (ft == airport::INVALID_FEED) return response;
     response = parseRSS2(tdoc, httpResponse, ft);
+    if (fullRss)
+    {
+        Mongo mongoDB;
+        mongo::DBClientConnection mongoConnection;
+        bool connected;
+        if (!enableUpdate)
+        {
+            connected = mongoDB.connect(&mongoConnection);
+        }
+        airport::BasicCrawler bc;
+        for (std::vector<airport::FeedEntry>::iterator it=response.second.begin();it!=response.second.end();++it)
+        {
+            airport::FeedEntry entry = (*it);
+            std::string url = entry.get_link();
+            if (!enableUpdate && connected)
+            {
+                std::string hashUrl = airport::Utils::sha1(url);
+                mongo::BSONObj b = mongoDB.getFeedEntryById(mongoConnection, hashUrl);
+                if (b.isEmpty())
+                {
+                    bc.add_url(url);
+                }
+            }else{
+                bc.add_url(url);
+            }
+        }
+        std::vector<airport::HttpResponse> hr = bc.start();
+        for(std::vector<airport::HttpResponse>::iterator hri=hr.begin();hri!=hr.end();++hri)
+        {
+            airport::Url url = hri->get_url();
+            for (std::vector<airport::FeedEntry>::iterator it=response.second.begin();it!=response.second.end();++it)
+            {
+                airport::FeedEntry entry = (*it);
+                if (entry.get_link() == url.get_raw_url())
+                {
+                    std::string html = hri->get_html_body();
+                    std::string title = entry.get_title();
+                    std::string desc = entry.get_desc();
+                    std::pair<std::string, std::string> p = extractContent(html, title, desc);
+                    std::string rtitle = p.first;
+                    std::string rdesc = p.second;
+                    it->set_title(rtitle);
+                    it->set_desc(rdesc);
+                    std::cout << rtitle << std::endl;
+                    std::cout << rdesc << std::endl;
+                }
+            }
+        }
+    }
     return response;
 }
 std::pair<airport::Feed, std::vector<airport::FeedEntry> >
@@ -214,6 +286,125 @@ airport::FeedCrawler::rss2Entry(const ticpp::Element *item, std::string &feedLin
     return entry;
 }
 
+std::pair<std::string, std::string>
+airport::FeedCrawler::extractContent(std::string &html, std::string &title, std::string &content)
+{
+    std::string htmlTidy = airport::Utils::tidy(html);
+    TidyDoc tdoc = tidyCreate();
+    TidyBuffer errbuf = {0};
+    tidySetErrorBuffer( tdoc, &errbuf );
+    tidyBufFree( &errbuf );
+    tidySetCharEncoding( tdoc, "utf8");
+    tidyParseString( tdoc, htmlTidy.c_str() );
+    
+    std::string responseContent = content;
+    std::string responseTitle = title;
+    std::string titleContent = title + content;
+    airport::nod_t matchNode = bestMatchNode(tdoc, tidyGetBody(tdoc), titleContent);
+    if (matchNode.second>=0)
+    {
+        TidyNode node = matchNode.first;
+        ctmbstr name = airport::Utils::nodeName(node);
+        TidyBuffer buf = {0};
+        tidyNodeGetText (tdoc, node, &buf);
+        std::string text(reinterpret_cast<const char *>(buf.bp));
+        text.erase(std::remove(text.begin(), text.end(), '\n'), text.end());
+        tidyBufFree( &buf );
+        responseContent = text;
+        text.erase(std::remove(text.begin(), text.end(), ' '), text.end());
+        
+        airport::nod_t titleMatchNode = bestMatchNode(tdoc, node, title);
+        if (titleMatchNode.second>=0)
+        {
+            TidyNode titleNode = titleMatchNode.first;
+            TidyBuffer buf = {0};
+            tidyNodeGetText (tdoc, titleNode, &buf);
+            std::string titleText(reinterpret_cast<const char *>(buf.bp));
+            titleText.erase(std::remove(titleText.begin(), titleText.end(), '\n'), titleText.end());
+            tidyBufFree( &buf );
+            responseTitle = airport::Utils::stripTags(titleText);
+            titleText.erase(std::remove(titleText.begin(), titleText.end(), ' '), titleText.end());
+            size_t found = text.find(titleText);
+            if (found!=std::string::npos)
+            {
+                responseContent = airport::Utils::htmlExceptNode(tdoc, node, titleNode);
+            }else{
+                responseContent = airport::Utils::htmlSafeNode(tdoc, node);
+            }
+        }
+    }
+    std::pair<std::string, std::string> response(responseTitle, responseContent);
+    return response;
+}
+
+airport::nod_t
+airport::FeedCrawler::bestMatchNode( TidyDoc tdoc, TidyNode tnod, std::string &request )
+{
+    TidyNode child;
+    airport::nod_t response = airport::nod_t(child, -1);
+    std::string reqStr = airport::Utils::stripTags(request);
+    if (reqStr.empty()) return response;
+    std::string tmpStr;
+    if (reqStr.length() > 4) tmpStr = reqStr.substr(0, 4);
+    else tmpStr = reqStr;
+    size_t found;
+    for ( child = tidyGetChild(tnod); child; child = tidyGetNext(child) )
+    {
+        ctmbstr name = airport::Utils::nodeName(child);
+        //assert( name != NULL );
+        if ( airport::Utils::isSafeNode(child) )
+        {
+            TidyBuffer buf = {0};
+            tidyNodeGetText (tdoc, child, &buf);
+            std::string text(reinterpret_cast<const char *>(buf.bp));
+            text.erase(std::remove(text.begin(), text.end(), '\n'), text.end());
+            tidyBufFree( &buf );
+            std::string domStr = airport::Utils::stripTags(text);
+            if (domStr.empty()) continue;
+            found=domStr.find(tmpStr);
+            if (found==std::string::npos) continue;
+            if (domStr.length() > reqStr.length()) domStr = domStr.substr(0, reqStr.length());
+            int distance = airport::Utils::distance(reqStr, domStr);
+            //std::cout << name << ":" << distance << ", " << s << std::endl;
+            if (response.second < 0 || distance < response.second)
+            {
+                response = nod_t(child, distance);
+            }else if (distance == response.second){
+                TidyBuffer buf = {0};
+                tidyNodeGetText (tdoc, response.first, &buf);
+                std::string rtext(reinterpret_cast<const char *>(buf.bp));
+                rtext.erase(std::remove(rtext.begin(), rtext.end(), '\n'), rtext.end());
+                tidyBufFree( &buf );
+                if (text.length() < rtext.length())
+                {
+                    response = nod_t(child, distance);
+                }
+            }
+            std::string namet(reinterpret_cast<const char *>(name));
+            if ( !(namet=="Text" || namet=="Comment" || airport::Utils::childNodeIsText(child) || tidyNodeIsHR(child) || tidyNodeIsBR(child) || tidyNodeIsIMG(child)) )
+            {
+                airport::nod_t node = bestMatchNode(tdoc, child, request);
+                if (node.second < 0) continue;
+                TidyBuffer rbuf = {0};
+                tidyNodeGetText (tdoc, response.first, &rbuf);
+                std::string rtext(reinterpret_cast<const char *>(rbuf.bp));
+                rtext.erase(std::remove(rtext.begin(), rtext.end(), '\n'), rtext.end());
+                tidyBufFree( &rbuf );
+                TidyBuffer nbuf = {0};
+                tidyNodeGetText (tdoc, node.first, &nbuf);
+                std::string ntext(reinterpret_cast<const char *>(nbuf.bp));
+                ntext.erase(std::remove(ntext.begin(), ntext.end(), '\n'), ntext.end());
+                tidyBufFree( &nbuf );
+                if (response.second < 0 || node.second < response.second || node.second == response.second && ntext.length() < rtext.length())
+                {
+                    response = node;
+                }
+            }
+        }
+    }
+    return response;
+}
+
 airport::FeedType
 airport::FeedCrawler::detectType(ticpp::Document &tdoc)
 {
@@ -249,8 +440,14 @@ airport::FeedCrawler::save(airport::Feed &feed, std::vector<airport::FeedEntry> 
     std::vector<airport::FeedEntry>::iterator it;
     for (it=entries.begin();it!=entries.end();++it)
     {
-        if (mongoDB.updateFeedEntry(mongoConnection, (*it)))
+        if (enableUpdate)
+        {
+            if (mongoDB.updateFeedEntry(mongoConnection, (*it)))
+                results ++;
+        }else{
+            mongoDB.insertFeedEntry(mongoConnection, (*it));
             results ++;
+        }
     }
 }
 
