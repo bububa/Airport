@@ -33,9 +33,7 @@
 
 #include <botan/botan.h>
 #include <botan/filters.h>
-#include <boost/algorithm/string/split.hpp>
-#include <boost/algorithm/string/classification.hpp>
-#include <boost/algorithm/string/find_iterator.hpp>
+#include <boost/algorithm/string.hpp>
 
 //#include "app-log.h"
 #include "Utils.h"
@@ -55,6 +53,16 @@ struct more_second
    inline bool operator()(const T& lhs, const T& rhs)
    {
       return lhs.second > rhs.second;
+   }
+};
+
+template<class T>
+struct less_second
+: std::binary_function<T,T,bool>
+{
+   inline bool operator()(const T& lhs, const T& rhs)
+   {
+      return lhs.second < rhs.second;
    }
 };
 
@@ -522,6 +530,7 @@ airport::Utils::jsonDecode(std::string &js)
 std::string
 airport::Utils::htmlSanitize(std::string &req)
 {
+    if (req.empty()) return req;
     std::string html = airport::Utils::tidy(req);
     TidyDoc tdoc = tidyCreate();
     TidyBuffer errbuf = {0};
@@ -536,6 +545,7 @@ airport::Utils::htmlSanitize(std::string &req)
 std::string
 airport::Utils::stripTags(std::string &req)
 {
+    if (req.empty()) return req;
     std::string html = airport::Utils::tidy(req);
     TidyDoc tdoc = tidyCreate();
     TidyBuffer errbuf = {0};
@@ -544,6 +554,7 @@ airport::Utils::stripTags(std::string &req)
     tidySetCharEncoding( tdoc, "utf8");
     tidyParseString( tdoc, html.c_str() );
     html = airport::Utils::htmlNodeText(tdoc, tidyGetBody(tdoc));
+    boost::trim(html);
     return html;
 }
 
@@ -584,18 +595,15 @@ airport::Utils::htmlSafeNode( TidyDoc tdoc, TidyNode tnod )
         //assert( name != NULL );
         if ( airport::Utils::isSafeNode(child) )
         {
-            TidyNode cchild = tidyGetChild(child);
-            ctmbstr cname = airport::Utils::nodeName(cchild);
             std::string namet(reinterpret_cast<const char *>(name));
-            std::string cnamet(reinterpret_cast<const char *>(cname));
-            if (namet=="Text" || cnamet=="Text" || tidyNodeIsHR(child) || tidyNodeIsBR(child) || tidyNodeIsIMG(child))
+            if (namet=="Text" || childNodeIsText(child) || tidyNodeIsHR(child) || tidyNodeIsBR(child) || tidyNodeIsIMG(child))
             {
                 TidyBuffer buf = {0};
                 tidyNodeGetText (tdoc, child, &buf);
                 std::string text(reinterpret_cast<const char *>(buf.bp));
                 text.erase(std::remove(text.begin(), text.end(), '\n'), text.end());
-                response += text;
                 tidyBufFree( &buf );
+                response += text;
             }else{
                 response += airport::Utils::htmlSafeNode( tdoc, child );
             }
@@ -604,10 +612,75 @@ airport::Utils::htmlSafeNode( TidyDoc tdoc, TidyNode tnod )
     return response;
 }
 
+std::string
+airport::Utils::htmlExceptNode( TidyDoc tdoc, TidyNode tnod, TidyNode enod )
+{
+    std::string response;
+    TidyBuffer buf = {0};
+    tidyNodeGetText (tdoc, enod, &buf);
+    std::string nodeText(reinterpret_cast<const char *>(buf.bp));
+    nodeText.erase(std::remove(nodeText.begin(), nodeText.end(), '\n'), nodeText.end());
+    tidyBufFree( &buf );
+    bool extracted = false;
+    TidyNode child;
+    for ( child = tidyGetChild(tnod); child; child = tidyGetNext(child) )
+    {
+        ctmbstr name = airport::Utils::nodeName(child);
+        if ( airport::Utils::isSafeNode(child) )
+        {
+            TidyBuffer buf = {0};
+            tidyNodeGetText (tdoc, child, &buf);
+            std::string text(reinterpret_cast<const char *>(buf.bp));
+            text.erase(std::remove(text.begin(), text.end(), '\n'), text.end());
+            tidyBufFree( &buf );
+            if (!extracted && text == nodeText)
+            {
+                continue;
+            }
+            std::string namet(reinterpret_cast<const char *>(name));
+            if (namet=="Text" || childNodeIsText(child) || tidyNodeIsHR(child) || tidyNodeIsBR(child) || tidyNodeIsIMG(child))
+            {
+                response += text;
+            }else{
+                //std::cout << text.substr(0, 20) << ", " << nodeText.substr(0, 20) << std::endl;
+                std::string node = airport::Utils::htmlExceptNode( tdoc, child, enod );
+                if (!node.empty())
+                {
+                    response += "<" + namet + ">" + node + "</" + namet + ">";
+                }
+            }
+        }
+    }
+    return response;
+}
+
+bool
+airport::Utils::childNodeIsText( TidyNode tnod )
+{
+    TidyNode child;
+    bool response = true;
+    for ( child = tidyGetChild(tnod); child; child = tidyGetNext(child) )
+    {
+        ctmbstr name = airport::Utils::nodeName(child);
+        if (name==NULL)
+        {
+            response = false;
+            break;
+        }
+        std::string namet(reinterpret_cast<const char *>(name));
+        if (namet!="Text") 
+        {
+            response = false;
+            break;
+        }
+    }
+    return response;
+}
+
 bool
 airport::Utils::isSafeNode( TidyNode tnod )
 {
-    return !( tidyNodeIsHTML(tnod) || tidyNodeIsHEAD(tnod) || tidyNodeIsTITLE(tnod) || tidyNodeIsBASE(tnod) || tidyNodeIsMETA(tnod) || tidyNodeIsBODY(tnod) || tidyNodeIsFRAMESET(tnod) || tidyNodeIsFRAME(tnod) || tidyNodeIsIFRAME(tnod) || tidyNodeIsNOFRAMES(tnod) || tidyNodeIsLINK(tnod) || tidyNodeIsOPTION(tnod) || tidyNodeIsAREA(tnod) || tidyNodeIsNOBR(tnod) || tidyNodeIsSTYLE(tnod) || tidyNodeIsSCRIPT(tnod) || tidyNodeIsNOSCRIPT(tnod) || tidyNodeIsFORM(tnod) || tidyNodeIsTEXTAREA(tnod) || tidyNodeIsAPPLET(tnod) || tidyNodeIsOBJECT(tnod) || tidyNodeIsINPUT(tnod) || tidyNodeIsXMP(tnod) || tidyNodeIsSELECT(tnod) || tidyNodeIsEMBED(tnod) || tidyNodeIsMENU(tnod) );
+    return !( tidyNodeIsHTML(tnod) || tidyNodeIsHEAD(tnod) || tidyNodeIsTITLE(tnod) || tidyNodeIsBASE(tnod) || tidyNodeIsMETA(tnod) || tidyNodeIsBODY(tnod) || tidyNodeIsFRAMESET(tnod) || tidyNodeIsFRAME(tnod) || tidyNodeIsIFRAME(tnod) || tidyNodeIsNOFRAMES(tnod) || tidyNodeIsLINK(tnod) || tidyNodeIsOPTION(tnod) || tidyNodeIsAREA(tnod) || tidyNodeIsNOBR(tnod) || tidyNodeIsSTYLE(tnod) || tidyNodeIsSCRIPT(tnod) || tidyNodeIsNOSCRIPT(tnod) || tidyNodeIsFORM(tnod) || tidyNodeIsTEXTAREA(tnod) || tidyNodeIsAPPLET(tnod) || tidyNodeIsOBJECT(tnod) || tidyNodeIsINPUT(tnod) || tidyNodeIsXMP(tnod) || tidyNodeIsSELECT(tnod) || tidyNodeIsEMBED(tnod) || tidyNodeIsMENU(tnod));
 }
 
 ctmbstr
@@ -731,4 +804,93 @@ airport::Utils::dateParser(std::string &datetime)
         //mtime = timegm(&parsed);
     }
     return mtime;
+}
+
+int 
+airport::Utils::distance(std::string &source, std::string &target)
+{
+
+  // Step 1
+
+  const int n = source.length();
+  const int m = target.length();
+  if (n == 0) {
+    return m;
+  }
+  if (m == 0) {
+    return n;
+  }
+
+  // Good form to declare a TYPEDEF
+
+  typedef std::vector< std::vector<int> > Tmatrix; 
+
+  Tmatrix matrix(n+1);
+
+  // Size the vectors in the 2.nd dimension. Unfortunately C++ doesn't
+  // allow for allocation on declaration of 2.nd dimension of vec of vec
+
+  for (int i = 0; i <= n; i++) {
+    matrix[i].resize(m+1);
+  }
+
+  // Step 2
+
+  for (int i = 0; i <= n; i++) {
+    matrix[i][0]=i;
+  }
+
+  for (int j = 0; j <= m; j++) {
+    matrix[0][j]=j;
+  }
+
+  // Step 3
+
+  for (int i = 1; i <= n; i++) {
+
+    const char s_i = source[i-1];
+
+    // Step 4
+
+    for (int j = 1; j <= m; j++) {
+
+      const char t_j = target[j-1];
+
+      // Step 5
+
+      int cost;
+      if (s_i == t_j) {
+        cost = 0;
+      }
+      else {
+        cost = 1;
+      }
+
+      // Step 6
+
+      const int above = matrix[i-1][j];
+      const int left = matrix[i][j-1];
+      const int diag = matrix[i-1][j-1];
+      int cell = std::min( above + 1, std::min(left + 1, diag + cost));
+
+      // Step 6A: Cover transposition, in addition to deletion,
+      // insertion and substitution. This step is taken from:
+      // Berghel, Hal ; Roach, David : "An Extension of Ukkonen's 
+      // Enhanced Dynamic Programming ASM Algorithm"
+      // (http://www.acm.org/~hlb/publications/asm/asm.html)
+
+      if (i>2 && j>2) {
+        int trans=matrix[i-2][j-2]+1;
+        if (source[i-2]!=t_j) trans++;
+        if (s_i!=target[j-2]) trans++;
+        if (cell>trans) cell=trans;
+      }
+
+      matrix[i][j]=cell;
+    }
+  }
+
+  // Step 7
+
+  return matrix[n][m];
 }
