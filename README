@@ -1,0 +1,37 @@
+A distributed crawler and parser system for vertical search engines designed based on Lego (http://github.com/bububa/Lego) protocol.
+
+[REQUIREMENTS]
+*nix platform
+curl
+boost 1.42 ++
+icu
+jsoncpp
+botan
+mysql
+mongodb
+tiny
+
+[RELATED LIBS]
+libcurl
+libcurlpp
+libboost_regex
+libboost_filesystem
+libboost_system
+libboost_program_options
+libboost_date_time
+libchardet
+libiconv
+libboost_thread
+libjson_linux-gcc-4.2.1_libmt
+libbotan
+libmongoclient
+libmysqlpp
+libmysqlclient
+libtidy
+libticppd
+
+[CONTACT]
+name: Syd Xu
+email: prof.syd.xu@gmail.com
+blog: http://syd.todayclose.com
+twitter: http://twitter.com/bububa/
