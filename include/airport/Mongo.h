@@ -54,6 +54,7 @@ namespace airport
         mongo::BSONObj getFeedById(mongo::DBClientConnection &c, std::string &id);
         void updateFeed(mongo::DBClientConnection &c, airport::Feed &feed);
         mongo::BSONObj getFeedEntryById(mongo::DBClientConnection &c, std::string &id);
+        void insertFeedEntry(mongo::DBClientConnection &c, airport::FeedEntry &entry);
         bool updateFeedEntry(mongo::DBClientConnection &c, airport::FeedEntry &entry);
     };
 }
