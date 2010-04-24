@@ -155,6 +155,8 @@ namespace airport {
             
             static std::string htmlNodeText( TidyDoc tdoc, TidyNode tnod );
             static std::string htmlSafeNode( TidyDoc tdoc, TidyNode tnod );
+            static std::string htmlExceptNode( TidyDoc tdoc, TidyNode tnod, TidyNode enod );
+            static bool childNodeIsText( TidyNode tnod );
             static bool isSafeNode( TidyNode tnod );
             static ctmbstr nodeName(TidyNode tnod);
             
@@ -173,6 +175,8 @@ namespace airport {
             static std::vector< boost::tuple<std::string, std::string, double> > bestMatchKeywords(std::vector< boost::tuple<std::string, std::string, double> > &keywords, std::string &str);
             
             static time_t dateParser(std::string &datetime);
+            
+            static int distance(std::string &source, std::string &target);
     };
 
 }
