@@ -318,6 +318,28 @@ airport::Mongo::getFeedEntryById(mongo::DBClientConnection &c, std::string &id)
     return b;
 }
 
+void 
+airport::Mongo::insertFeedEntry(mongo::DBClientConnection &c, airport::FeedEntry &entry)
+{
+    std::string hashUrl = airport::Utils::sha1(entry.get_link());
+    mongo::BSONObjBuilder b;
+    b.append("title", entry.get_title());
+    b.append("desc", entry.get_desc());
+    b.append("link", entry.get_link());
+    b.append("pubdate", (long long int)entry.get_pubdate());
+    b.append("updated_datetime", (long long int)time(NULL));
+    b.append("feed_link", entry.get_feed_link());
+    b.append("web_link", entry.get_web_link());
+    b.append("author", entry.get_author());
+    b.append("category", entry.get_category());
+    b.append("comments", entry.get_comments());
+    b.append("guid", entry.get_guid());
+    b.append("_id", hashUrl);
+    b.append("inserted_datetime", (long long int)time(NULL));
+    mongo::BSONObj p = b.obj();
+    c.insert(MONGO_FEEDENTRY_COLLECTION, p);
+}
+
 bool 
 airport::Mongo::updateFeedEntry(mongo::DBClientConnection &c, airport::FeedEntry &entry)
 {
