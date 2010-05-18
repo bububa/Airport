@@ -1,0 +1,287 @@
+/* 
+html5doctor.com Reset Stylesheet
+v1.4.1 
+2010-03-01
+Author: Richard Clark - http://richclarkdesign.com
+*/
+
+html, body, div, span, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+abbr, address, cite, code,
+del, dfn, em, img, ins, kbd, q, samp,
+small, strong, sub, sup, var,
+b, i,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, figcaption, figure, 
+footer, header, hgroup, menu, nav, section, summary,
+time, mark, audio, video {
+    margin:0;
+    padding:0;
+    border:0;
+    outline:0;
+    font-size:100%;
+    vertical-align:baseline;
+    background:transparent;
+}
+
+body {
+    line-height:1;
+}
+
+article,aside,canvas,details,figcaption,figure,
+footer,header,hgroup,menu,nav,section,summary { 
+    display:block;
+}
+
+nav ul {
+    list-style:none;
+}
+
+blockquote, q {
+    quotes:none;
+}
+
+blockquote:before, blockquote:after,
+q:before, q:after {
+    content:'';
+    content:none;
+}
+
+a {
+    margin:0;
+    padding:0;
+    border:0;
+    font-size:100%;
+    vertical-align:baseline;
+    background:transparent;
+}
+
+ins {
+    background-color:#ff9;
+    color:#000;
+    text-decoration:none;
+}
+
+mark {
+    background-color:#ff9;
+    color:#000; 
+    font-style:italic;
+    font-weight:bold;
+}
+
+del {
+    text-decoration: line-through;
+}
+
+abbr[title], dfn[title] {
+    border-bottom:1px dotted #000;
+    cursor:help;
+}
+
+table {
+    border-collapse:collapse;
+    border-spacing:0;
+}
+
+hr {
+    display:block;
+    height:1px;
+    border:0;   
+    border-top:1px solid #cccccc;
+    margin:1em 0;
+    padding:0;
+}
+
+input, select {
+    vertical-align:middle;
+}
+
+img, div, a, input, section { behavior: url(/public/img/iepngfix.htc) }
+
+/**
+ * REDECLARATIONS
+ */
+html               {background:#202020;color:#ccc;}
+body               {font:12px "Helvetica Neue", Helvetica, Arial, Verdana, sans-serif; color:#999; color:rgba(255,255,255,0.7);text-shadow:rgba(0,0,0,0.5) 0 1px 1px; background:#202020;}
+
+a                  {text-decoration:none; color:#95E572;}
+a:hover            {border-bottom:1px dotted #95E572; text-decoration:none;}
+a img              {border:none;}
+sup,sub            {height: 0; line-height: 1; vertical-align: baseline; _vertical-align: bottom; position: relative;}
+sup                {bottom: 1ex;}
+sub                {top: .5ex;}
+
+/* Custom Classes */
+.fl{float:left;}
+.fr{float:right;}
+.red{color:#FF0000;}
+.small-text-gray{color:#999; font-size:11px;}
+.error {color:#ff0000;}
+.container{width:990px;margin:0 auto;text-align:left}
+.hidden{display:none;}
+.clear{clear:both;}
+
+/* Common Header */
+header {
+    width:100%;
+    height: 60px;
+    padding:10px 0;
+    width:990px;margin:0 auto;
+}
+
+header .sub {
+    font:16px "Helvetica Neue", Helvetica, Arial, Verdana, sans-serif;
+    color:#333;
+    color:rgba(255,255,255,0.7);
+}
+
+header h1 {
+    font:32px "Helvetica Neue", Helvetica, Arial, Verdana, sans-serif;
+    color:#FFF;
+    color:rgba(255,255,255,1.0);
+    text-shadow:rgba(0,0,0,0.5) 0 1px 1px;
+    display: block;
+}
+
+form.login-form {
+    padding-top:10px;
+    text-align: left;
+}
+
+form.login-form input {
+    border:0;
+    background-color: #383838;
+    color:#ccc;
+    font-size:11px;
+    width:150px;
+}
+
+form.login-form input.password {
+    width:150px;
+}
+
+/* COMMON BODY PARTS */
+div.axis_left p, div.axis_right p{
+    height: 23px;
+}
+
+.transparent40 {
+    background: transparent url(/public/img/opacity40.png) repeat;
+}
+section.system, section.nodes {
+    width:990px;margin:0 auto;
+    padding:10px 0;
+}
+
+section.node {
+    padding:10px 10px 0;
+}
+
+section.node header {
+    height:auto;
+    width:auto;
+    padding:0;
+}
+
+section.node header h2 {
+    font:28px "Helvetica Neue", Helvetica, Arial, Verdana, sans-serif;
+    color:#FFF;
+    color:rgba(255,255,255,1.0);
+    text-shadow:rgba(0,0,0,0.5) 0 1px 1px;
+    padding:10px;
+    display: block;
+}
+
+h3.datagrid {
+    font:16px "Helvetica Neue", Helvetica, Arial, Verdana, sans-serif;
+    color:#FFF;
+    color:rgba(255,255,255,1.0);
+    text-shadow:rgba(0,0,0,0.5) 0 1px 1px;
+    padding:10px;
+    display: block;
+    cursor:pointer;
+}
+
+section.node summary span {
+    font:12px "Helvetica Neue", Helvetica, Arial, Verdana, sans-serif;
+    color:lightblue;
+    text-shadow:rgba(0,0,0,0.5) 0 1px 1px;
+    padding:0 5px;
+}
+
+table.datagrid {
+    margin:10px;
+    background:black;
+    padding:10px;
+}
+
+table.datagrid thead th {
+    font:13px "Helvetica Neue", Helvetica, Arial, Verdana, sans-serif;
+    color:#333;
+    color:rgba(0,0,0,0.8);
+    text-shadow:rgba(0,0,0,0.5) 0 1px 1px;
+    padding:4px 10px;
+    background-image: -moz-linear-gradient(top, #F7F7F7, #BCBCBC); /* Firefox 3.6 */
+	background-image: -webkit-gradient(linear,left bottom,left top,color-stop(0, #BCBCBC),color-stop(1, #F7F7F7)); /* Safari & Chrome */
+	filter:  progid:DXImageTransform.Microsoft.gradient(GradientType=0,startColorstr='#F7F7F7', endColorstr='#BCBCBC'); /* IE6 & IE7 */
+	-ms-filter: "progid:DXImageTransform.Microsoft.gradient(GradientType=0,startColorstr='#F7F7F7', endColorstr='#BCBCBC')"; /* IE8 */
+}
+
+table.datagrid tbody th {
+    font:12px "Helvetica Neue", Helvetica, Arial, Verdana, sans-serif;
+    color:#FFF;
+    color:rgba(255,255,255,1.0);
+    text-shadow:rgba(0,0,0,0.5) 0 1px 1px;
+    padding:4px 10px;
+}
+
+table.datagrid tbody td {
+    font:10px "Helvetica Neue", Helvetica, Arial, Verdana, sans-serif;
+    color:#FFF;
+    color:rgba(255,255,255,1.0);
+    text-shadow:rgba(0,0,0,0.5) 0 1px 1px;
+    padding:4px 10px;
+}
+
+/* COMMON FOOTER PARTS */
+footer {
+    clear: both;
+    background-color: black;
+    height:170px;
+    border: black solid 1px;
+}
+
+footer nav {
+    width:400px;margin:0 auto;text-align:left;
+    padding:10px;
+}
+
+footer nav ul {
+    float:left;
+    border-left:#999 solid 1px;
+    padding:0 10px;
+}
+
+footer nav li {
+    line-height: 1.5em;
+}
+
+footer nav li a {
+    color:#999;
+}
+
+footer address {
+    padding-top:50px;
+    padding-left:10px;
+    font-weight: normal;
+}
+
+
+.gradient {
+	background-image: -moz-linear-gradient(top, #F7F7F7, #BCBCBC); /* Firefox 3.6 */
+	background-image: -webkit-gradient(linear,left bottom,left top,color-stop(0, #BCBCBC),color-stop(1, #F7F7F7)); /* Safari & Chrome */
+	filter:  progid:DXImageTransform.Microsoft.gradient(GradientType=0,startColorstr='#F7F7F7', endColorstr='#BCBCBC'); /* IE6 & IE7 */
+	-ms-filter: "progid:DXImageTransform.Microsoft.gradient(GradientType=0,startColorstr='#F7F7F7', endColorstr='#BCBCBC')"; /* IE8 */
+}

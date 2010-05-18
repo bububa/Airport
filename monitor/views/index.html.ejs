@@ -1,0 +1,29 @@
+<header>
+    <h1><%= title %></h1>
+    <p class="sub">Airport crawler activities visualization</p>
+</header>
+<section class="node system" id="node__system">
+    <header><h2>System</h2><button class="playbtn" id="play__system">Stop</button></header>
+    <summary id="summary__system">
+        <span class="page">0</span>PAGES/SEC., <span class="speed">0</span>SEC./PAGE, <span class="bytes">0</span>BYTES/SEC.
+    </summary>
+    <div id="graph__system" class="datagraph">
+        <div class="axis_left fl"></div>
+        <canvas width="760" height="120" class="fl"></canvas>
+        <div class="axis_right fl"></div>
+        <div class="clear"></div>
+    </div>
+    <h3 class="datagrid">+ Data Grid</h3>
+    <table id="table__system" class="datagrid" style="display:none">
+    <thead><tr><th>TimeStamp</th><th>Pages</th><th>Speed</th><th>Bytes</th></tr></thead>
+    <tbody></tbody>
+    </table>
+</section>
+<hr />
+<section class="nodes">
+<% if (nodes && nodes.length) { %>
+    <% for (var i = 0; i < nodes.length; ++i) { %>
+        <%= this.partial("node.html.ejs", { locals: { node: nodes[i] } }) %>
+    <% } %>
+<% } %>
+</section>

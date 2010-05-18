@@ -1,0 +1,17 @@
+<section class="node fl" id="node_<%= node %>">
+    <header><h2>Node <q>"<%= node %>"</q></h2><button class="playbtn" id="play__<%= node %>">Stop</button></header>
+    <summary id="summary_<%= node %>">
+        <span class="page">0</span>PAGES/SEC., <span class="speed">0</span>SEC./PAGE, <span class="bytes">0</span>BYTES/SEC.
+    </summary>
+    <div id="graph_<%= node %>" class="datagraph">
+        <div class="axis_left fl"></div>
+        <canvas width="380" height="72" class="fl"></canvas>
+        <div class="axis_right fl"></div>
+        <div class="clear"></div>
+    </div>
+    <h3 class="datagrid">+ Data Grid</h3>
+    <table id="table_<%= node %>" class="datagrid" style="display:none">
+    <thead><tr><th>TimeStamp</th><th>Pages</th><th>Speed</th><th>Bytes</th></tr></thead>
+    <tbody></tbody>
+    </table>
+</section>
