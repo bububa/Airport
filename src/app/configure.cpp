@@ -10,7 +10,7 @@ namespace fs = boost::filesystem;
 
 int main()
 {
-    std::string data_path, mongodb_host, debug_level, mysql_server, mysql_user, mysql_passwd, mysql_db, mysql_table, license, activate_code;
+    std::string data_path, mongodb_host, log_host, debug_level, mysql_server, mysql_user, mysql_passwd, mysql_db, mysql_table, license, activate_code;
     std::cout << "This is a crawler system designed for vertical search engine.\n" << std::endl;
     std::cout << "CODE name: Airport" << std::endl;
     std::cout << "Version: " << airport::AIRPORT_VERSION << std::endl;
@@ -37,10 +37,13 @@ int main()
     /* SETTING MONGODB HOST */
     std::cout << "2. [MongoDB Host] is the ip:port address for mongodb which is the storage system for the crawler. You could get more information about mongodb at mongodb.org." << std::endl;
     std::cin >> mongodb_host;
+    /* SETTING MONGODB HOST */
+    std::cout << "3. [LOG Host] is the ip:port address for log server." << std::endl;
+    std::cin >> log_host;
     /* SETTING DEBUG LEVEL */
     while(true)
     {
-        std::cout << "3. [DEBUG Level] (off/normal/warning/error/critical). Default [DEBUG Level] is normal." << std::endl;
+        std::cout << "4. [DEBUG Level] (off/normal/warning/error/critical). Default [DEBUG Level] is normal." << std::endl;
         std::cin >> debug_level;
         std::transform(debug_level.begin(), debug_level.end(), debug_level.begin(), (int(*)(int)) std::tolower);
         if (debug_level == "off" || debug_level == "normal" || debug_level == "warning" || debug_level == "error" || debug_level == "critical")
@@ -48,27 +51,28 @@ int main()
     }
     
     /* SETTING MySQL Server */
-    std::cout << "4. [MySQL Server]: ";
+    std::cout << "5. [MySQL Server]: ";
     std::cin >> mysql_server;
-    std::cout << "5. [MySQL Database]: ";
+    std::cout << "6. [MySQL Database]: ";
     std::cin >> mysql_db;
-    std::cout << "6. [MySQL User]: ";
+    std::cout << "7. [MySQL User]: ";
     std::cin >> mysql_user;
-    std::cout << "7. [MySQL Password]:";
+    std::cout << "8. [MySQL Password]:";
     std::cin >> mysql_passwd;
-    std::cout << "8. [MySQL Table]: ";
+    std::cout << "9. [MySQL Table]: ";
     std::cin >> mysql_table;
     
     /* ACTIVATION CODE AND LISENSE */
-    std::cout << "9. [LISENSE]: ";
+    std::cout << "10. [LISENSE]: ";
     std::cin >> license;
-    std::cout << "10. [ACTIVATION CODE]: ";
+    std::cout << "11. [ACTIVATION CODE]: ";
     std::cin >> activate_code;
     
     /* WRITE configure.info */
     boost::property_tree::ptree pt;
     pt.put("DATA_PATH", data_path);
     pt.put("MONGODB_HOST", mongodb_host);
+    pt.put("LOG_HOST", log_host);
     pt.put("DEBUG_LEVEL", debug_level);
     pt.put("MYSQL_SERVER", mysql_server);
     pt.put("MYSQL_DB", mysql_db);

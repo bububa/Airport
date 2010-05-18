@@ -24,7 +24,7 @@ namespace po = boost::program_options;
 #define MAX_SERVER_IDLE_TIMESTAMP 300
 
 pid_t 
-subprocess(std::string &rule)
+subprocess(std::string &rule, std::string &node)
 {
     pid_t pid, child_pid;
     pid = fork();
@@ -37,7 +37,7 @@ subprocess(std::string &rule)
         case 0: // Child
             child_pid = getpid();
             printf("This is the child: pid = %d\n", child_pid);
-            rule = "eva --rule=" + rule;
+            rule = "eva --rule=" + rule + " --node=" + node;
             system(rule.c_str());
             exit(0);
     }
@@ -63,7 +63,7 @@ check_jobs(std::string &alias, std::map<pid_t, std::string> & running_processes,
         std::ofstream rulefile (rule_path.c_str());
         rulefile << rulecontent;
         rulefile.close();
-        pid_t pid = subprocess( rulename );
+        pid_t pid = subprocess( rulename, alias );
         if (pid > 0)
         {
             running_processes.insert(std::map<pid_t, std::string>::value_type(pid, rulename) );

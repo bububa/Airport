@@ -79,7 +79,7 @@ airport::HttpResponse::set_parsed_data(std::string &parsedData)
 }
 
 void 
-airport::HttpResponse::set_user_info(boost::any &user_info)
+airport::HttpResponse::set_user_info(std::map<std::string, std::string> &user_info)
 {
     userInfo = user_info;
 }

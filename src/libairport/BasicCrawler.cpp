@@ -1,6 +1,7 @@
 #include "BasicCrawler.h"
 #include "Config.h"
 #include "Utils.h"
+
 #include <boost/bind.hpp>
 #include <boost/threadpool.hpp>
 #include <boost/utility/result_of.hpp>
@@ -14,6 +15,7 @@
 #include <curlpp/Options.hpp>
 #include <curlpp/Exception.hpp>
 #include <curlpp/Infos.hpp>
+
 
 #define DEFAULT_CHUNK_SIZE 50
 boost::mutex m_io_monitor2;
@@ -80,6 +82,19 @@ airport::BasicCrawler::BasicCrawler():maxThreads(DEFAULT_CRAWLER_MAX_THREADS)
 airport::BasicCrawler::~BasicCrawler()
 {
     
+}
+
+void 
+airport::BasicCrawler::set_node_name (const char *node_name)
+{
+    std::string tn(node_name);
+    set_node_name(tn);
+}
+
+void 
+airport::BasicCrawler::set_node_name (std::string &node_name)
+{
+    nodename = node_name;
 }
 
 void 
@@ -199,7 +214,7 @@ airport::BasicCrawler::set_max_threads(unsigned int max_threads)
 }
 
 void 
-airport::BasicCrawler::set_user_info(boost::any &user_info)
+airport::BasicCrawler::set_user_info(std::map<std::string, std::string> &user_info)
 {
     userInfo = user_info;
 }
@@ -230,6 +245,7 @@ airport::BasicCrawler::start()
     std::vector <airport::HttpResponse> httpResponse;
     if (request.empty())
         return httpResponse;
+    httpClient.set_node_name(nodename);
     httpClient.set_user_info(userInfo);
     if (request.size() == 1 || maxThreads==0)
     {

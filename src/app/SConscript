@@ -24,17 +24,22 @@ Requires(eva, libairport)
 
 target_airport = 'airport'
 airport = env.Program(target_airport, "airport.cpp")
+Requires(airport, libairport)
 
 target_inserter = 'inserter'
 inserter = env.Program(target_inserter, "inserter.cpp")
+Requires(inserter, libairport)
 
 target_configure = 'configure'
 configure = env.Program(target_configure, "configure.cpp")
+Requires(configure, libairport)
 
 target_keygen = 'keygen'
 keygen = env.Program(target_keygen, "keygen.cpp")
+Requires(keygen, libairport)
 
 target_test = 'test'
 test = env.Program(target_test, "test.cpp")
+Requires(test, libairport)
 
 Export("airport eva inserter")

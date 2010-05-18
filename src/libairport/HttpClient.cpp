@@ -2,8 +2,8 @@
 #include "HttpClient.h"
 #include "HttpResponse.h"
 #include "Url.h"
-
 #include "Utils.h"
+
 #include <stdio.h>
 #include <sstream>
 #include <istream>
@@ -31,6 +31,11 @@
 #include <curlpp/Infos.hpp>
 
 #define CHARSET_MAX 256
+
+#include "Mongo.h"
+#ifndef _ctime_is_not_threadsafe_
+#define _ctime_is_not_threadsafe_
+#endif
 
 boost::mutex m_io_monitor;
 
@@ -168,6 +173,7 @@ airport::HttpClient&
 airport::HttpClient::operator= (HttpClient &httpClient)
 {   
     this->url = httpClient.url;
+    nodename = httpClient.nodename;
     cookiePath = httpClient.cookiePath;
     cookieList = httpClient.cookieList;
     resetCookie = httpClient.resetCookie;
@@ -310,6 +316,15 @@ airport::HttpClient::get()
         httpResponse.set_user_info(userInfo);
         httpResponse.set_updated_time(time(NULL));
         set_state(STATE_COMPLETED);
+        
+        if (!airport::LOG_HOST.empty())
+        {
+            Mongo mongoDB;
+            mongo::DBClientConnection mongoConnection;
+            std::string log_host = airport::LOG_HOST;
+            mongoDB.connect(&mongoConnection, log_host);
+            mongoDB.insertDLog(mongoConnection, httpResponse, nodename);
+        }
         return httpResponse;
         
     }
@@ -336,6 +351,14 @@ airport::HttpClient::get()
     totalTime = endTime.tv_sec + static_cast<double>(endTime.tv_usec)/1000000 - startTime.tv_sec - static_cast<double>(startTime.tv_usec)/1000000;
     std::string htmlBody("");
     airport::HttpResponse httpResponse(url, htmlBody, 408, totalTime, time(NULL));
+    if (!airport::LOG_HOST.empty())
+    {
+        Mongo mongoDB;
+        mongo::DBClientConnection mongoConnection;
+        std::string log_host = airport::LOG_HOST;
+        mongoDB.connect(&mongoConnection, log_host);
+        mongoDB.insertDLog(mongoConnection, httpResponse, nodename);
+    }
     return httpResponse;
 }
 
@@ -427,6 +450,19 @@ airport::HttpClient::read_cookie_jar(std::string &cookie_path)
 }
 
 void 
+airport::HttpClient::set_node_name (const char *node_name)
+{
+    std::string tn(node_name);
+    set_node_name(tn);
+}
+
+void 
+airport::HttpClient::set_node_name (std::string &node_name)
+{
+    nodename = node_name;
+}
+
+void 
 airport::HttpClient::set_cookie_path (const char *cookie_path)
 {
     std::string tcp(cookie_path);
@@ -482,7 +518,7 @@ airport::HttpClient::set_opt_timevalue(time_t timevalue)
 }
 
 void 
-airport::HttpClient::set_user_info(boost::any &user_info)
+airport::HttpClient::set_user_info(std::map<std::string, std::string> &user_info)
 {
     userInfo = user_info;
 }

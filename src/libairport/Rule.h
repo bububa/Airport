@@ -22,6 +22,7 @@ namespace airport
     {
         boost::property_tree::ptree pt;
         std::map<std::string, boost::any> staticModules;
+        std::string nodename;
         /* PRIVATE METHODS */
         bool runable(std::string &module, time_t duration, time_t updated_time);
         void update_rule(std::string &filename, std::string &module, boost::any &response, time_t duration, std::string &path);
@@ -50,6 +51,8 @@ namespace airport
         Rule();
         ~Rule();
         std::string operator()(std::string &module, std::string request);
+        void set_node_name(const char *nodename);
+        void set_node_name(std::string &nodename);
         static std::string readinfo(const char *filename);
         static std::string readinfo(std::string &filename);
         void parse(const char *filename);

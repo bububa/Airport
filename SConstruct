@@ -41,6 +41,8 @@ def configure():
         header = re.sub('static const std::string DATA_PATH[^^]*?;', 'static const std::string DATA_PATH("%s");'%parameters['DATA_PATH'], header)
     if 'MONGODB_HOST' in parameters:
         header = re.sub('static const std::string MONGODB_HOST[^^]*?;', 'static const std::string MONGODB_HOST("%s");'%parameters['MONGODB_HOST'], header)
+    if 'LOG_HOST' in parameters:
+        header = re.sub('static const std::string LOG_HOST[^^]*?;', 'static const std::string LOG_HOST("%s");'%parameters['LOG_HOST'], header)
     if 'DEBUG_LEVEL' in parameters:
         debug_level = {'off':'DEBUG_OFF', 'normal':'DEBUG_NORMAL', 'warning':'DEBUG_WARNING', 'error':'DEBUG_ERROR', 'critical':'DEBUG_CRITICAL'}
         header = re.sub('static const int DEBUG_LEVEL[^^]*?;', 'static const int DEBUG_LEVEL = airport::%s;'%debug_level[parameters['DEBUG_LEVEL']], header)

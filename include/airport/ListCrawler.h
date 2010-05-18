@@ -20,6 +20,7 @@ namespace airport
     {
         typedef boost::function<std::string(std::string, std::string)> function_type;
         airport::HttpClient httpClient;
+        std::string nodename;
         std::string startUrl;
         int startNumber;
         int endNumber;
@@ -51,6 +52,9 @@ namespace airport
         ListCrawler(std::string &startUrlString);
         ListCrawler();
         ~ListCrawler();
+        
+        void set_node_name(std::string &node_name);
+        void set_node_name(const char *node_name);
         
         void set_start_url(const char *start_url);
         void set_start_url(std::string &start_url);

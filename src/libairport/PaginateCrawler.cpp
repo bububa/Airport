@@ -25,6 +25,19 @@ airport::PaginateCrawler::~PaginateCrawler()
     
 }
 
+void 
+airport::PaginateCrawler::set_node_name (const char *node_name)
+{
+    std::string tn(node_name);
+    set_node_name(tn);
+}
+
+void 
+airport::PaginateCrawler::set_node_name (std::string &node_name)
+{
+    nodename = node_name;
+}
+
 void
 airport::PaginateCrawler::set_start_url(const char *start_url)
 {
@@ -288,6 +301,7 @@ airport::PaginateCrawler::start()
                     hc.set_opt_postfield(p);
                 }
             }
+            basicCrawler.set_node_name(nodename);
             basicCrawler.add_url(startUrl);
             basicCrawler.set_http_client(hc);
             basicCrawler.set_max_threads(maxThreads);
@@ -322,6 +336,7 @@ airport::PaginateCrawler::start()
         std::string value(it->second);
         basicCrawler.add_parser(key, value);
     }
+    basicCrawler.set_node_name(nodename);
     basicCrawler.set_http_client(httpClient);
     basicCrawler.set_max_threads(maxThreads);
     basicCrawler.set_essential_fields(essentialFields);

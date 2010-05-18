@@ -28,6 +28,19 @@ airport::FeedCrawler::~FeedCrawler()
 }
 
 void 
+airport::FeedCrawler::set_node_name (const char *node_name)
+{
+    std::string tn(node_name);
+    set_node_name(tn);
+}
+
+void 
+airport::FeedCrawler::set_node_name (std::string &node_name)
+{
+    nodename = node_name;
+}
+
+void 
 airport::FeedCrawler::set_save_in_mongo(bool save)
 {
     saveInMongo = save;
@@ -76,6 +89,7 @@ airport::FeedCrawler::get(std::string &url)
         }
     }
     airport::BasicCrawler bc;
+    bc.set_node_name(nodename);
     airport::HttpClient hc = httpClient;
     hc.set_opt_timevalue((time_t)lastTime);
     if (!etag.empty())
@@ -126,6 +140,7 @@ airport::FeedCrawler::parse(airport::HttpResponse &httpResponse)
             connected = mongoDB.connect(&mongoConnection);
         }
         airport::BasicCrawler bc;
+        bc.set_node_name(nodename);
         for (std::vector<airport::FeedEntry>::iterator it=response.second.begin();it!=response.second.end();++it)
         {
             airport::FeedEntry entry = (*it);

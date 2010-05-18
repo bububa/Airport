@@ -35,6 +35,19 @@ airport::Rule::operator()(std::string &module, std::string request)
     return response;
 }
 
+void 
+airport::Rule::set_node_name(const char *nodename)
+{
+    std::string tn(nodename);
+    set_node_name(tn);
+}
+
+void 
+airport::Rule::set_node_name(std::string &nodename)
+{
+    this->nodename = nodename;
+}
+
 std::string 
 airport::Rule::readinfo(const char *filename)
 {
@@ -293,6 +306,7 @@ airport::HttpClient
 airport::Rule::httpClient(std::string &path)
 {
     airport::HttpClient hc;
+    hc.set_node_name(nodename);
     /* SET NOCOOKIE */
     bool noCookie = pt.get(path + ".no_cookie", true);
     hc.set_no_cookie(noCookie);
@@ -386,6 +400,7 @@ std::pair< airport::PaginateCrawler, std::vector<airport::HttpResponse> >
 airport::Rule::paginateCrawler(std::string &path)
 {
     airport::PaginateCrawler pc;
+    pc.set_node_name(nodename);
     try{
         std::string startUrl = pt.get<std::string>(path + ".starturl");
         pc.set_start_url(startUrl);
@@ -558,6 +573,7 @@ std::pair< airport::ListCrawler, std::vector<airport::HttpResponse> >
 airport::Rule::listCrawler(std::string &path)
 {
     airport::ListCrawler lc;
+    lc.set_node_name(nodename);
     try{
         std::string startUrl = pt.get<std::string>(path + ".starturl");
         lc.set_start_url(startUrl);
@@ -820,6 +836,7 @@ std::pair< airport::FeedCrawler, std::pair<airport::Feed, std::vector<airport::F
 airport::Rule::feedCrawler(std::string &path)
 {
     airport::FeedCrawler fc;
+    fc.set_node_name(nodename);
     std::pair<airport::Feed, std::vector<airport::FeedEntry> > result;
     /* SET HTTPCLIENT */
     std::string httpClientModule = pt.get<std::string>(path + ".httpclient", "");
@@ -867,6 +884,7 @@ std::pair< airport::BasicCrawler, std::vector<airport::HttpResponse> >
 airport::Rule::basicCrawler(std::string &path, const std::string &start_url)
 {
     airport::BasicCrawler bc;
+    bc.set_node_name(nodename);
     /* SET URLS */
     if (start_url.empty())
     {

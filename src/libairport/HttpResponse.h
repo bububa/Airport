@@ -3,7 +3,7 @@
 
 #include <string>
 #include <time.h>
-#include <boost/any.hpp>
+#include <map>
 #include "Url.h"
 
 namespace airport
@@ -18,7 +18,7 @@ namespace airport
         double totalTime;
         time_t updatedTime;
         std::string parsedData;
-        boost::any userInfo;
+        std::map<std::string, std::string> userInfo;
     public:
         HttpResponse(airport::Url &url, std::string &htmlBody, long responseCode, double totalTime, time_t updatedTime);
         HttpResponse();
@@ -33,7 +33,7 @@ namespace airport
         void set_total_time(double totalTime);
         void set_updated_time(time_t updatedTime);
         void set_parsed_data(std::string &parsedData);
-        void set_user_info(boost::any &userInfo);
+        void set_user_info(std::map<std::string, std::string> &userInfo);
         
         airport::Url get_url() const { return url; };
         std::string get_html_body() const { return htmlBody; };

@@ -371,3 +371,19 @@ airport::Mongo::updateFeedEntry(mongo::DBClientConnection &c, airport::FeedEntry
     }
     return insert;
 }
+
+void 
+airport::Mongo::insertDLog(mongo::DBClientConnection &c, airport::HttpResponse &httpResponse, std::string &nodename)
+{
+    mongo::BSONObjBuilder b;
+    b.append("node", nodename);
+    airport::Url url = httpResponse.get_url();
+    b.append("domain", url.get_host());
+    b.append("url", url.get_effective_url());
+    b.append("dsize", (int)httpResponse.get_html_body().size());
+    b.append("dtime", (long long int)httpResponse.get_updated_time());
+    b.append("ttime", (long long int)httpResponse.get_total_time());
+    b.append("code", (int)httpResponse.get_response_code());
+    mongo::BSONObj p = b.obj();
+    c.insert(MONGO_DLOG_COLLECTION, p);
+}

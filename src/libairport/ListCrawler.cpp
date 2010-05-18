@@ -28,6 +28,19 @@ airport::ListCrawler::~ListCrawler()
     
 }
 
+void 
+airport::ListCrawler::set_node_name (const char *node_name)
+{
+    std::string tn(node_name);
+    set_node_name(tn);
+}
+
+void 
+airport::ListCrawler::set_node_name (std::string &node_name)
+{
+    nodename = node_name;
+}
+
 void
 airport::ListCrawler::set_start_url(const char *start_url)
 {
@@ -332,6 +345,7 @@ airport::ListCrawler::start()
 {
     std::vector<airport::HttpResponse> httpResponse;
     airport::PaginateCrawler paginateCrawler(startUrl);
+    paginateCrawler.set_node_name(nodename);
     paginateCrawler.set_start_number(startNumber);
     paginateCrawler.set_end_number(endNumber);
     paginateCrawler.set_page_step(pageStep);
@@ -377,6 +391,7 @@ airport::ListCrawler::start()
         if (urls.empty())
             continue;
         airport::BasicCrawler basicCrawler;
+        basicCrawler.set_node_name(nodename);
         basicCrawler.set_http_client(httpClient);
         basicCrawler.set_essential_fields(essentialFields);
         basicCrawler.set_black_keywords(blackKeywords);

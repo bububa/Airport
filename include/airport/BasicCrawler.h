@@ -20,11 +20,12 @@ namespace airport
     {
         typedef boost::function<std::string(std::string, std::string)> function_type;
         airport::HttpClient httpClient;
+        std::string nodename;
         std::vector<airport::Url> request;
         std::vector<std::string> blackKeywords;
         std::map<std::string, std::string> parser;
         unsigned int maxThreads;
-        boost::any userInfo;
+        std::map<std::string, std::string> userInfo;
         std::map<std::string, std::string> userDict;
         std::vector<std::string> essentialFields;
         std::map<std::string, std::pair<function_type, std::string> > observers;
@@ -38,6 +39,9 @@ namespace airport
         BasicCrawler(airport::Url &url);
         BasicCrawler();
         ~BasicCrawler();
+        
+        void set_node_name(std::string &node_name);
+        void set_node_name(const char *node_name);
         
         void add_url(const char *urlCString);
         void add_url(std::string &urlString);
@@ -66,7 +70,7 @@ namespace airport
         void set_observers(std::map<std::string, std::pair<function_type, std::string> > &observers);
         
         void set_max_threads(unsigned int max_threads);
-        void set_user_info(boost::any &userInfo);
+        void set_user_info(std::map<std::string, std::string> &userInfo);
         
         void set_http_client(airport::HttpClient &httpClient);
         

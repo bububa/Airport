@@ -42,6 +42,7 @@ int main(int argc, char *argv[]) {
     desc.add_options()
         ("help", "produce help message")
         ("rule,r", po::value<std::string>(), "set rule name")
+        ("node,n", po::value<std::string>(), "set node name")
     ;
     po::variables_map vm;
     po::store(po::parse_command_line(argc, argv, desc), vm);
@@ -56,7 +57,14 @@ int main(int argc, char *argv[]) {
         std::cout << "Rule file was not set." << std::endl;
         return 0;
     }
-    
+    std::string node;
+    if (vm.count("node")) {
+        node = vm["node"].as<std::string>();
+        std::cout << "Node name " << node << std::endl;
+    }else{
+        std::cout << "Node name is empty" << std::endl;
+        node = "";
+    }
     /* FIND RULE FILE */
     fs::path data_path(airport::DATA_PATH);
     fs::path rule_path;
@@ -68,6 +76,7 @@ int main(int argc, char *argv[]) {
     
     /* EXECUTE RULE */
     airport::Rule rule;
+    rule.set_node_name(node);
     std::string filename(rule_path.string());
     if (airport::DEBUG_LEVEL > airport::DEBUG_NORMAL)
     {

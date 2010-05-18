@@ -4,10 +4,10 @@
 #include <iostream>
 #include <sstream>
 #include <vector>
+#include <map>
 #include <list>
 #include <utility>
 #include <time.h>
-#include <boost/any.hpp>
 #include "Url.h"
 #include "HttpResponse.h"
 
@@ -34,10 +34,11 @@ namespace airport {
     class HttpClient {
         airport::Url url;
         HttpClientState state;
+        std::string nodename;
         std::string cookiePath;
         std::vector<std::string> cookieList;
         std::list<std::string> headers;
-        boost::any userInfo;
+        std::map<std::string, std::string> userInfo;
         /* CURL OPTIONS */
         bool resetCookie;
         bool noCookie;
@@ -75,6 +76,9 @@ namespace airport {
         airport::HttpResponse get(airport::Url &url);
         airport::HttpResponse get();
         
+        void set_node_name(std::string &node_name);
+        void set_node_name(const char *node_name);
+        
         void set_cookie_path(std::string &cookie_path);
         void set_cookie_path(const char *cookie_path);
         
@@ -82,7 +86,7 @@ namespace airport {
         void reset_cookie();
         void set_no_cookie(bool no_cookie);
         
-        void set_user_info(boost::any &userInfo);
+        void set_user_info(std::map<std::string, std::string> &userInfo);
         
         /* CURL OPTS SETTING METHODS */
         void set_opt_connect_timeout(int connect_timeout);

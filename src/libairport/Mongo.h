@@ -16,6 +16,8 @@
 #define MONGO_FEEDENTRY_COLLECTION "airport.feedentry"
 #define MONGO_DISPATCHER_COLLECTION "airport.dispatcher"
 #define MONGO_SERVER_COLLECTION "airport.server"
+#define MONGO_DLOG_COLLECTION "airport.dlog"
+
 
 namespace airport 
 {
@@ -56,6 +58,8 @@ namespace airport
         mongo::BSONObj getFeedEntryById(mongo::DBClientConnection &c, std::string &id);
         void insertFeedEntry(mongo::DBClientConnection &c, airport::FeedEntry &entry);
         bool updateFeedEntry(mongo::DBClientConnection &c, airport::FeedEntry &entry);
+        
+        void insertDLog(mongo::DBClientConnection &c, airport::HttpResponse &httpResponse, std::string &nodename);
     };
 }
 

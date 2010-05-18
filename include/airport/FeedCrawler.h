@@ -33,6 +33,7 @@ namespace airport
     class FeedCrawler
     {
         airport::HttpClient httpClient;
+        std::string nodename;
         bool saveInMongo;
         bool fullRss;
         bool enableUpdate;
@@ -41,6 +42,8 @@ namespace airport
     public:
         FeedCrawler();
         ~FeedCrawler();
+        void set_node_name(std::string &node_name);
+        void set_node_name(const char *node_name);
         void set_save_in_mongo(bool save);
         void set_full_rss(bool full);
         void set_enable_update(bool update);
